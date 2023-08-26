@@ -11,6 +11,4 @@ app.use(cors);
 app.use(routes);
 app.use(errorHandler);
 
-app.listen(3001, () => console.log('Server started at http://localhost:3000'));
-
-// DESLIGAR SERVIÇOS DO POSTGRES PRA RODAR
+app.listen(3001, () => console.log('Server started at http://localhost:3001'));

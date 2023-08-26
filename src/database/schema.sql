@@ -1,17 +1,11 @@
-CREATE DATABASE mycontacts;
+CREATE DATABASE myfinances;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp;";
 
-CREATE TABLE IF NOT EXISTS categories (
-  id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
-  name VARCHAR NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS contacts (
+CREATE TABLE IF NOT EXISTS users (
   id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
   name VARCHAR NOT NULL,
-  email VARCHAR UNIQUE,
-  phone VARCHAR UNIQUE,
-  category_id UUID,
-  FOREIGN KEY(category_id) REFERENCES categories(id)
+  document VARCHAR UNIQUE NOT NULL,
+  password VARCHAR NOT NULL,
+  email VARCHAR UNIQUE NOT NULL
 );
