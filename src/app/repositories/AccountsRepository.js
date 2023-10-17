@@ -39,8 +39,24 @@ class AccountsRepository {
   }
 
   async delete(id) {
-    const deleteOp = await db.query('DELETE FROM accounts WHERE id = $1;', [id]);
+    const deleteOp = await db.query('DELETE FROM accounts WHERE id = $1;', [
+      id,
+    ]);
     return deleteOp;
+  }
+
+  async balanceMovement(accountId, value) {
+    const [row] = await db.query(
+      `
+      UPDATE accounts
+      SET saldo = $1
+      WHERE id = $2
+      RETURNING *;
+      `,
+      [value, accountId]
+    );
+
+    return row;
   }
 }
 

@@ -1,8 +1,11 @@
 const db = require('../../database');
 
 class MovementsRepository {
-  async findAll() {
-    const rows = await db.query('SELECT * FROM movements;');
+  async findAll(accountId) {
+    const [rows] = await db.query(
+      'SELECT * FROM movements WHERE fk_accountId = $1;',
+      [accountId]
+    );
     return rows;
   }
 

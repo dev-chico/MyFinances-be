@@ -1,55 +1,73 @@
 const UsersRepository = require('../repositories/UsersRepository');
+const AccountsRepository = require('../repositories/AccountsRepository');
+const generateAccountNumber = require('../utils/generateAccountNumber');
 
 class UserController {
   async index(request, response) {
-    const { orderBy } = request.query;
-    const contacts = await UsersRepository.findAll(orderBy);
-
-    response.json(contacts);
+    const users = await UsersRepository.findAll();
+    response.json(users);
   }
 
   async show(request, response) {
     const { id } = request.params;
-    const contact = await UsersRepository.findById(id);
+    const user = await UsersRepository.findById(id);
 
-    if (!contact) {
+    if (!user) {
       return response.status(404).json({ error: 'User not found' });
     }
 
-    response.json(contact);
+    response.json(user);
   }
 
   async store(request, response) {
-    const { name, document, email, password } = request.body;
+    const { name, document, email, password, investmentId } = request.body;
 
     if (!name) {
       return response.status(400).json({ error: 'Name is required' });
     }
 
-    const contactExists = await UsersRepository.findByEmail(email);
+    const userExists = await UsersRepository.findByEmail(email);
 
-    if (contactExists) {
+    if (userExists) {
       return response
         .status(400)
         .json({ error: 'This e-mail is already in use.' });
     }
 
-    const contact = await UsersRepository.create({
+    const user = await UsersRepository.create({
       name,
       document,
       email,
       password,
     });
 
-    response.json(contact);
+    const account = await AccountsRepository.create({
+      number: generateAccountNumber(),
+      balance: 0,
+      investmentId,
+      userId: user.id,
+    });
+
+    const formatedUser = {
+      ...user,
+      account: {
+        ...account,
+      },
+    };
+
+    delete formatedUser.password;
+    delete formatedUser.account.fk_userid;
+    delete formatedUser.account.fk_investmentid;
+
+    response.json(formatedUser);
   }
 
   async update(request, response) {
     const { id } = request.params;
     const { name, document, email, password } = request.body;
-    const contactExists = await UsersRepository.findById(id);
+    const userExists = await UsersRepository.findById(id);
 
-    if (!contactExists) {
+    if (!userExists) {
       return response.status(404).json({ error: 'User not found' });
     }
 
@@ -57,9 +75,9 @@ class UserController {
       return response.status(400).json({ error: 'Name is required' });
     }
 
-    const contactByEmail = await UsersRepository.findByEmail(email);
+    const userByEmail = await UsersRepository.findByEmail(email);
 
-    if (contactByEmail && contactByEmail.id !== id) {
+    if (userByEmail && userByEmail.id !== id) {
       return response
         .status(400)
         .json({ error: 'This e-mail is already in use.' });
