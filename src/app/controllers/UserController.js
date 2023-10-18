@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const UsersRepository = require('../repositories/UsersRepository');
 const AccountsRepository = require('../repositories/AccountsRepository');
 const generateAccountNumber = require('../utils/generateAccountNumber');
@@ -34,11 +36,13 @@ class UserController {
         .json({ error: 'This e-mail is already in use.' });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await UsersRepository.create({
       name,
       document,
       email,
-      password,
+      password: hashedPassword,
     });
 
     const account = await AccountsRepository.create({
@@ -97,6 +101,24 @@ class UserController {
     const { id } = request.params;
     await UsersRepository.delete(id);
     response.sendStatus(204);
+  }
+
+  async login(request, response) {
+    const { email, password } = request.body;
+
+    try {
+      const user = await UsersRepository.findByEmail(email);
+
+      if (user && await bcrypt.compare(password, user.password)) {
+        const token = jwt.sign({ userId: user.id }, 'A$Jg3Lp@9F!k2zTq#oP5s^W8c', { expiresIn: '1h' });
+        response.json({ token });
+      } else {
+        response.status(401).json({ error: 'Credenciais inválidas' });
+      }
+    } catch (error) {
+      console.error(error);
+      response.status(500).json({ error: 'Erro na autenticação' });
+    }
   }
 }
 
