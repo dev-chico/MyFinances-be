@@ -1,10 +1,12 @@
+/* eslint-disable no-unused-vars */
 const AccountsRepository = require('../repositories/AccountsRepository');
 const MovementsRepository = require('../repositories/MovementsRepository');
+const UsersRepository = require('../repositories/UsersRepository');
 
 class UserController {
   async index(request, response) {
-    const { accountId } = request.body;
-    const movements = await MovementsRepository.findAll(accountId);
+    const { id } = request.params;
+    const movements = await MovementsRepository.findAll(id);
 
     response.json(movements);
   }
@@ -21,27 +23,59 @@ class UserController {
   }
 
   async deposit(request, response) {
-    const { accountId, value } = request.body;
-
+    const { accountId, email, newBalance, value } = request.body;
     const account = await AccountsRepository.findById(accountId);
-    const newBalance = Number(account.saldo) + value;
 
     await AccountsRepository.balanceMovement(accountId, newBalance);
-    await MovementsRepository.create('deposit', new Date(), value, accountId);
+    const movement = await MovementsRepository.create(
+      'deposit',
+      new Date().toLocaleDateString(),
+      value,
+      accountId
+    );
 
-    response.json({ message: 'Operação realizada com sucesso!' });
+    const user = await UsersRepository.findByEmail(email);
+
+    const formatedResponse = {
+      ...user,
+      account: {
+        ...account,
+      },
+    };
+
+    delete formatedResponse.password;
+    delete formatedResponse.account.fk_userid;
+    delete formatedResponse.account.fk_investmentid;
+
+    response.json({ movement, user: formatedResponse });
   }
 
   async withdrawal(request, response) {
-    const { accountId, value } = request.body;
-
+    const { accountId, email, newBalance, value } = request.body;
     const account = await AccountsRepository.findById(accountId);
-    const newBalance = Number(account.saldo) - value;
 
     await AccountsRepository.balanceMovement(accountId, newBalance);
-    await MovementsRepository.create('withdrawal', new Date(), value, accountId);
+    const movement = await MovementsRepository.create(
+      'withdrawal',
+      new Date().toLocaleDateString(),
+      value,
+      accountId
+    );
 
-    response.json({ message: 'Operação realizada com sucesso!' });
+    const user = await UsersRepository.findByEmail(email);
+
+    const formatedResponse = {
+      ...user,
+      account: {
+        ...account,
+      },
+    };
+
+    delete formatedResponse.password;
+    delete formatedResponse.account.fk_userid;
+    delete formatedResponse.account.fk_investmentid;
+
+    response.json({ movement, user: formatedResponse });
   }
 }
 

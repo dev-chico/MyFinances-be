@@ -9,8 +9,13 @@ class InvestmentsRepository {
   }
 
   async findAll() {
-    const [row] = await db.query('SELECT * FROM investments');
-    return row;
+    const rows = await db.query('SELECT * FROM investments');
+    return rows;
+  }
+
+  async delete(id) {
+    const deleteOp = await db.query('DELETE FROM investments WHERE id = $1;', [id]);
+    return deleteOp;
   }
 }
 

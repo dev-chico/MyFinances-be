@@ -38,9 +38,26 @@ CREATE TABLE IF NOT EXISTS movements (
 );
 
 INSERT INTO investments (investmentType, rescue_time, yield)
-VALUES
-('Tesouro Pré-Fixado', 60, 102),
-('Tesouro Selic', 120, 105),
-('Tesouro IPCA+', 180, 108),
-('CDB & LC', 210, 111),
-('LCI & LCA', 240, 115);
+VALUES ('Tesouro Pré-Fixado', 60, 102),
+
+INSERT INTO investments (investmentType, rescue_time, yield)
+VALUES ('Tesouro Selic', 120, 105);
+
+INSERT INTO investments (investmentType, rescue_time, yield)
+VALUES ('Tesouro IPCA+', 180, 108);
+
+INSERT INTO investments (investmentType, rescue_time, yield)
+VALUES ('CDB & LC', 210, 111);
+
+INSERT INTO investments (investmentType, rescue_time, yield)
+VALUES ('LCI & LCA', 240, 115);
+
+
+ALTER TABLE movements
+ALTER COLUMN movementDate TYPE VARCHAR;
+
+ALTER TABLE movements
+ALTER COLUMN movementValue TYPE VARCHAR;
+
+
+INSERT INTO movements(movementType, movementDate, movementValue, fk_accountId) VALUES ('deposit', '18/10/2023', '100.00', 'fbf4b11c-fb6c-403b-bafc-43e9722895d7')

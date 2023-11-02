@@ -1,13 +1,19 @@
 const express = require('express');
+const cors = require('cors');
 const routes = require('./routes');
-const cors = require('./app/middlewares/cors');
 const errorHandler = require('./app/middlewares/errorHandler');
 require('express-async-errors');
 
 const app = express();
 
 app.use(express.json());
-app.use(cors);
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  })
+);
 app.use(routes);
 app.use(errorHandler);
 

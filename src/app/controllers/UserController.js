@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const UsersRepository = require('../repositories/UsersRepository');
 const AccountsRepository = require('../repositories/AccountsRepository');
+const InvestmentsRepository = require('../repositories/InvestmentsRepository');
 const generateAccountNumber = require('../utils/generateAccountNumber');
 
 class UserController {
@@ -18,7 +19,19 @@ class UserController {
       return response.status(404).json({ error: 'User not found' });
     }
 
-    response.json(user);
+    const account = await AccountsRepository.findByUserId(id);
+
+    const formatedUser = {
+      ...user,
+      account: {
+        ...account,
+      },
+    };
+
+    delete formatedUser.account.fk_userid;
+    delete formatedUser.account.fk_investmentid;
+
+    response.json(formatedUser);
   }
 
   async store(request, response) {
@@ -87,14 +100,28 @@ class UserController {
         .json({ error: 'This e-mail is already in use.' });
     }
 
-    const contact = await UsersRepository.update(id, {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await UsersRepository.update(id, {
       name,
       document,
       email,
-      password,
+      password: hashedPassword,
     });
 
-    response.json(contact);
+    const account = await AccountsRepository.findByUserId(id);
+
+    const formatedUser = {
+      ...user,
+      account: {
+        ...account,
+      },
+    };
+
+    delete formatedUser.account.fk_userid;
+    delete formatedUser.account.fk_investmentid;
+
+    response.json(formatedUser);
   }
 
   async delete(request, response) {
@@ -108,10 +135,28 @@ class UserController {
 
     try {
       const user = await UsersRepository.findByEmail(email);
+      const account = await AccountsRepository.findByUserId(user.id);
 
-      if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({ userId: user.id }, 'A$Jg3Lp@9F!k2zTq#oP5s^W8c', { expiresIn: '1h' });
-        response.json({ token });
+      if (user && (await bcrypt.compare(password, user.password))) {
+        const token = jwt.sign(
+          { userId: user.id },
+          'A$Jg3Lp@9F!k2zTq#oP5s^W8c',
+          { expiresIn: '1h' }
+        );
+
+        const formatedResponse = {
+          ...user,
+          account: {
+            ...account,
+          },
+          token,
+        };
+
+        delete formatedResponse.password;
+        delete formatedResponse.account.fk_userid;
+        delete formatedResponse.account.fk_investmentid;
+
+        response.json({ ...formatedResponse });
       } else {
         response.status(401).json({ error: 'Credenciais inválidas' });
       }
@@ -119,6 +164,11 @@ class UserController {
       console.error(error);
       response.status(500).json({ error: 'Erro na autenticação' });
     }
+  }
+
+  async listInvestments(request, response) {
+    const investments = await InvestmentsRepository.findAll();
+    response.json(investments);
   }
 }
 

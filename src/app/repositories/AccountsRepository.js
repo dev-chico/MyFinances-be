@@ -11,6 +11,11 @@ class AccountsRepository {
     return row;
   }
 
+  async findByUserId(id) {
+    const [row] = await db.query('SELECT * FROM accounts WHERE fk_userId = $1;', [id]);
+    return row;
+  }
+
   async create({ number, balance, userId, investmentId }) {
     const [row] = await db.query(
       `

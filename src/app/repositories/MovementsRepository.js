@@ -2,7 +2,7 @@ const db = require('../../database');
 
 class MovementsRepository {
   async findAll(accountId) {
-    const [rows] = await db.query(
+    const rows = await db.query(
       'SELECT * FROM movements WHERE fk_accountId = $1;',
       [accountId]
     );
@@ -16,7 +16,7 @@ class MovementsRepository {
     return row;
   }
 
-  async create({ movementType, movementDate, movementValue, accountId }) {
+  async create(movementType, movementDate, movementValue, accountId) {
     const [row] = await db.query(
       `
     INSERT INTO movements(movementType, movementDate, movementValue, fk_accountId)

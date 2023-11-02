@@ -9,13 +9,13 @@ const router = Router();
 router.get('/users', verifyToken, UserController.index);
 router.get('/users/:id', verifyToken, UserController.show);
 router.delete('/users/:id', verifyToken, UserController.delete);
-router.post('/users', verifyToken, UserController.store);
+router.post('/users', UserController.store);
 router.put('/users/:id', verifyToken, UserController.update);
 
 router.post('/login', UserController.login);
 
 // Movement
-router.get('/movements', verifyToken, MovementController.index);
+router.get('/movements/:id', MovementController.index);
 router.get('/movements/:id', verifyToken, MovementController.show);
 router.post('/movements/deposit', verifyToken, MovementController.deposit);
 router.post(
@@ -23,5 +23,8 @@ router.post(
   verifyToken,
   MovementController.withdrawal
 );
+
+// Investments
+router.get('/investments', UserController.listInvestments);
 
 module.exports = router;
